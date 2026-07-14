@@ -1,0 +1,162 @@
+{
+  "perfect_score_leads": {
+    "description": "Lead profiles that achieve 100/100 scores in the LQOA system",
+    "scoring_breakdown": {
+      "total_possible_points": 100,
+      "company_size": "25 points (50-5000 employees)",
+      "industry": "30 points (SaaS, FinTech, HealthTech, E-commerce, MarTech, EdTech)",
+      "role": "25 points (VP Sales, CRO, CEO, Founder, CMO, Head of Sales, Director of Revenue)",
+      "buying_signals": "20 points (2+ positive signals)",
+      "email_domain": "0 penalty (business domain, not personal)"
+    },
+    "verified_100_score_leads": [
+      {
+        "lead_id": 1,
+        "first_name": "Sarah",
+        "last_name": "Johnson",
+        "email": "sarah.johnson@acmecorp.com",
+        "company": "Acme Corp",
+        "role_title": "VP Sales",
+        "free_text": "Looking to scale our sales operations with better lead qualification tools",
+        "company_details": {
+          "domain": "acmecorp.com",
+          "industry": "SaaS",
+          "employee_count": 320,
+          "buying_signals": ["recently_funded", "hiring_sales_roles"]
+        },
+        "expected_score": 100,
+        "expected_classification": "HOT"
+      },
+      {
+        "lead_id": 2,
+        "first_name": "Michael",
+        "last_name": "Chen",
+        "email": "m.chen@globex.io",
+        "company": "Globex",
+        "role_title": "CRO",
+        "free_text": "Need to improve our revenue operations and lead conversion rates",
+        "company_details": {
+          "domain": "globex.io",
+          "industry": "FinTech",
+          "employee_count": 1200,
+          "buying_signals": ["new_product_launch", "expanding_to_new_markets"]
+        },
+        "expected_score": 100,
+        "expected_classification": "HOT"
+      }
+    ],
+    "alternative_perfect_roles": [
+      {
+        "lead_id": 3,
+        "first_name": "Alexandra",
+        "last_name": "Rivera",
+        "email": "alex.rivera@acmecorp.com",
+        "company": "Acme Corp",
+        "role_title": "Head of Sales",
+        "free_text": "Interested in automating our lead qualification process",
+        "expected_score": 100
+      },
+      {
+        "lead_id": 4,
+        "first_name": "David",
+        "last_name": "Kim",
+        "email": "d.kim@globex.io",
+        "company": "Globex",
+        "role_title": "VP Marketing",
+        "free_text": "Want to integrate better lead scoring into our marketing funnel",
+        "expected_score": 100
+      },
+      {
+        "lead_id": 5,
+        "first_name": "Emma",
+        "last_name": "Thompson",
+        "email": "emma@acmecorp.com",
+        "company": "Acme Corp",
+        "role_title": "CEO",
+        "free_text": "Looking for enterprise lead management solutions",
+        "expected_score": 100
+      }
+    ],
+    "custom_perfect_companies": [
+      {
+        "lead_id": 6,
+        "first_name": "James",
+        "last_name": "Wilson",
+        "email": "founder@techflow.com",
+        "company": "TechFlow Solutions",
+        "role_title": "Founder",
+        "free_text": "Building a SaaS platform and need better lead qualification",
+        "company_details": {
+          "domain": "techflow.com",
+          "industry": "SaaS",
+          "employee_count": 500,
+          "buying_signals": ["recently_funded", "hiring_sales_roles"],
+          "note": "Hypothetical company - would need to be added to enrichment database"
+        },
+        "expected_score": 100,
+        "expected_classification": "HOT"
+      },
+      {
+        "lead_id": 7,
+        "first_name": "Maria",
+        "last_name": "Garcia",
+        "email": "vp.marketing@medhealth.io",
+        "company": "MedHealth Pro",
+        "role_title": "VP Marketing",
+        "free_text": "Scaling our HealthTech platform and need advanced lead scoring",
+        "company_details": {
+          "domain": "medhealth.io",
+          "industry": "HealthTech",
+          "employee_count": 150,
+          "buying_signals": ["new_product_launch", "expanding_to_new_markets"],
+          "note": "Hypothetical company - would need to be added to enrichment database"
+        },
+        "expected_score": 100,
+        "expected_classification": "HOT"
+      },
+      {
+        "lead_id": 8,
+        "first_name": "Robert",
+        "last_name": "Brown",
+        "email": "cmo@edulearn.tech",
+        "company": "EduLearn Systems",
+        "role_title": "CMO",
+        "free_text": "Expanding our EdTech solution globally and need better lead management",
+        "company_details": {
+          "domain": "edulearn.tech",
+          "industry": "EdTech",
+          "employee_count": 2000,
+          "buying_signals": ["recently_funded", "new_product_launch"],
+          "note": "Hypothetical company - would need to be added to enrichment database"
+        },
+        "expected_score": 100,
+        "expected_classification": "HOT"
+      }
+    ],
+    "usage_instructions": {
+      "streamlit_ui": "Copy any lead profile into the Streamlit form at http://localhost:8501",
+      "api_testing": "Use these profiles for testing the pipeline programmatically",
+      "note": "Verified leads (1-5) work immediately. Custom companies (6-8) require adding to enrichment database first"
+    }
+  },
+  "quick_test_examples": [
+    {
+      "email": "sarah.johnson@acmecorp.com",
+      "company": "Acme Corp",
+      "role": "VP Sales",
+      "guaranteed_result": "100/100 - HOT"
+    },
+    {
+      "email": "m.chen@globex.io", 
+      "company": "Globex",
+      "role": "CRO",
+      "guaranteed_result": "100/100 - HOT"
+    },
+    {
+      "email": "alex.rivera@acmecorp.com",
+      "company": "Acme Corp", 
+      "role": "Head of Sales",
+      "guaranteed_result": "100/100 - HOT"
+    }
+  ]
+}

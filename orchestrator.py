@@ -111,6 +111,7 @@ def run_pipeline(lead: LeadState) -> LeadState:
         },
         output_snapshot={"injection_detected": lead.injection_detected},
         injection_detected=lead.injection_detected,
+        email=lead.email,
     )
 
     if lead.injection_detected:
@@ -120,6 +121,7 @@ def run_pipeline(lead: LeadState) -> LeadState:
             input_snapshot={"free_text_preview": lead.free_text[:120]},
             output_snapshot={"action": "free_text_quarantined_scoring_continues_from_real_signals"},
             injection_detected=True,
+            email=lead.email,
         )
         # Scoring still proceeds normally from enrichment — injection text is quarantined
 
@@ -148,7 +150,7 @@ def run_pipeline(lead: LeadState) -> LeadState:
     lead.status = "classified"
 
     # ── 5. Route ──────────────────────────────────────────────────────────────
-    is_hot = route(classification=lead.classification, lead_id=lead.lead_id)
+    is_hot = route(classification=lead.classification, lead_id=lead.lead_id, email=lead.email, company=lead.company)
 
     if not is_hot:
         label = lead.classification.label
@@ -174,5 +176,7 @@ def run_pipeline(lead: LeadState) -> LeadState:
             "subject": lead.draft.subject,
             "body_length": len(lead.draft.body),
         },
+        email=lead.email,
+        classification=lead.classification.label,
     )
     return lead

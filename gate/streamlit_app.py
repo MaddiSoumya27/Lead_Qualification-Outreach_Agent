@@ -287,16 +287,63 @@ with tab_gov:
 
     st.markdown("---")
     st.subheader("Full Audit Log")
-    filter_lead = st.text_input("Filter by lead_id (leave blank for all)")
-    filter_stage = st.text_input("Filter by stage (leave blank for all)")
+    
+    # Filters row
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        filter_lead = st.text_input("Filter by lead_id (leave blank for all)")
+    with col_f2:
+        filter_stage = st.text_input("Filter by stage (leave blank for all)")
+    with col_f3:
+        filter_classification = st.selectbox(
+            "Filter by classification", 
+            options=["All", "HOT", "NURTURE", "DISQUALIFY"],
+            index=0
+        )
 
+    # Apply filters
+    classification_filter = None if filter_classification == "All" else filter_classification
+    
     log_entries = query_log(
         lead_id=filter_lead or None,
         stage=filter_stage or None,
+        classification=classification_filter,
     )
+    
     st.caption(f"{len(log_entries)} entries")
-    for entry in reversed(log_entries):
-        with st.expander(
-            f"{entry['timestamp']} | {entry['stage']} | lead: {entry['lead_id']}"
-        ):
-            st.json(entry)
+    
+    # Display entries in a table format for better readability
+    if log_entries:
+        # Create a summary table
+        table_data = []
+        for entry in reversed(log_entries):  # Show most recent first
+            table_data.append({
+                "Timestamp": entry.get('timestamp', 'N/A')[:19].replace('T', ' '),
+                "Lead ID": entry.get('lead_id', 'N/A'),
+                "Stage": entry.get('stage', 'N/A'),
+                "Email": entry.get('email', 'N/A'),
+                "Classification": entry.get('classification', 'N/A'),
+                "Injection": "⚠️" if entry.get('injection_detected') else "",
+                "Gate Decision": entry.get('gate_decision', 'N/A'),
+                "Authorized By": entry.get('authorized_by', 'N/A'),
+            })
+        
+        # Show table
+        import pandas as pd
+        df = pd.DataFrame(table_data)
+        st.dataframe(df, use_container_width=True)
+        
+        st.markdown("---")
+        st.subheader("Detailed Entry View")
+        st.caption("Click to expand individual entries for full details")
+        
+        # Detailed expandable entries
+        for entry in reversed(log_entries):
+            email_display = f" | {entry.get('email', 'N/A')}" if entry.get('email') else ""
+            classification_display = f" | {entry.get('classification', 'N/A')}" if entry.get('classification') else ""
+            with st.expander(
+                f"{entry['timestamp']} | {entry['stage']} | lead: {entry['lead_id']}{email_display}{classification_display}"
+            ):
+                st.json(entry)
+    else:
+        st.info("No log entries found matching the current filters.")

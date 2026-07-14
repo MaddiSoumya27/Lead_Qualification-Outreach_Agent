@@ -60,5 +60,6 @@ def classify(
         stage="classification",
         input_snapshot={"score": s, "thresholds": thresholds},
         output_snapshot=result.to_dict(),
+        classification=label,
     )
     return result

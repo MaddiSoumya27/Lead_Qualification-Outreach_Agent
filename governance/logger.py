@@ -22,6 +22,8 @@ def log_event(
     injection_detected: bool = False,
     gate_decision: Optional[str] = None,
     authorized_by: Optional[str] = None,
+    email: Optional[str] = None,
+    classification: Optional[str] = None,
     extra: Optional[dict] = None,
 ):
     """Append one structured entry to the audit JSONL log."""
@@ -35,6 +37,8 @@ def log_event(
         "injection_detected": injection_detected,
         "gate_decision": gate_decision,
         "authorized_by": authorized_by,
+        "email": email,
+        "classification": classification,
     }
     if extra:
         entry.update(extra)
@@ -42,8 +46,8 @@ def log_event(
         f.write(json.dumps(entry) + "\n")
 
 
-def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None) -> list[dict]:
-    """Return all log entries, optionally filtered by lead_id and/or stage."""
+def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None, classification: Optional[str] = None) -> list[dict]:
+    """Return all log entries, optionally filtered by lead_id, stage, and/or classification."""
     _ensure_log_dir()
     path = os.path.abspath(LOG_PATH)
     if not os.path.exists(path):
@@ -61,6 +65,8 @@ def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None) -> lis
             if lead_id and entry.get("lead_id") != lead_id:
                 continue
             if stage and entry.get("stage") != stage:
+                continue
+            if classification and entry.get("classification") != classification:
                 continue
             results.append(entry)
     return results

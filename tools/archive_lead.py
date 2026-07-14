@@ -6,13 +6,13 @@ from governance.logger import log_event
 _ARCHIVE: list[dict] = []
 
 
-def archive_lead(lead_id: str, reason: str) -> dict:
-    record = {"lead_id": lead_id, "reason": reason}
+def archive_lead(lead_id: str, reason: str, email: str = "", company: str = "") -> dict:
+    record = {"lead_id": lead_id, "reason": reason, "email": email, "company": company}
     _ARCHIVE.append(record)
     log_event(
         lead_id=lead_id,
         stage="archive_lead",
-        input_snapshot={"reason": reason},
+        input_snapshot={"reason": reason, "email": email, "company": company},
         output_snapshot={"status": "archived"},
     )
     return {"success": True, **record}

@@ -15,6 +15,8 @@ from governance.logger import log_event
 def route(
     classification: ClassificationResult,
     lead_id: str,
+    email: str = "",
+    company: str = "",
     sequence_name: str = "default_nurture",
 ) -> bool:
     """
@@ -25,24 +27,28 @@ def route(
     reason = classification.reason
 
     if label == "DISQUALIFY":
-        archive_lead(lead_id=lead_id, reason=reason)
-        crm_write(lead_id=lead_id, fields={"status": "disqualify", "reason": reason})
+        archive_lead(lead_id=lead_id, reason=reason, email=email, company=company)
+        crm_write(lead_id=lead_id, fields={"status": "disqualify", "reason": reason, "email": email, "company": company})
         log_event(
             lead_id=lead_id,
             stage="routing",
             input_snapshot={"label": label},
             output_snapshot={"action": "archived"},
+            email=email,
+            classification=label,
         )
         return False
 
     if label == "NURTURE":
-        sequence_enroll(lead_id=lead_id, sequence_name=sequence_name, reason=reason)
-        crm_write(lead_id=lead_id, fields={"status": "nurture", "reason": reason})
+        sequence_enroll(lead_id=lead_id, sequence_name=sequence_name, reason=reason, email=email, company=company)
+        crm_write(lead_id=lead_id, fields={"status": "nurture", "reason": reason, "email": email, "company": company})
         log_event(
             lead_id=lead_id,
             stage="routing",
             input_snapshot={"label": label},
             output_snapshot={"action": "sequence_enrolled"},
+            email=email,
+            classification=label,
         )
         return False
 
@@ -52,5 +58,7 @@ def route(
         stage="routing",
         input_snapshot={"label": label},
         output_snapshot={"action": "passed_to_drafting"},
+        email=email,
+        classification=label,
     )
     return True
