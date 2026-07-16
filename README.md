@@ -90,10 +90,52 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) Set your OpenAI API key for LLM-phrased reasons and email drafts
-#    Without it the pipeline runs fully in offline/deterministic mode.
-echo "OPENAI_API_KEY=sk-..." > .env
+# 4. Configure environment variables in a .env file (copy the block below)
+cp .env.example .env   # then fill in the values you need
 ```
+
+### Environment variables
+
+Create a `.env` file in the project root. Every variable is optional — the
+pipeline runs fully offline when none are set.
+
+```dotenv
+# ── LLM (scoring rationale + email drafting) ─────────────────────────────────
+# Without this the pipeline runs in deterministic-only mode.
+OPENAI_API_KEY=sk-...
+
+# ── Firmographic enrichment ───────────────────────────────────────────────────
+# Controls which provider is used for company data lookup.
+# Accepted values: clearbit | pdl | mock  (default: mock)
+ENRICHMENT_PROVIDER=clearbit
+
+# Clearbit Company Enrichment API
+# Sign up: https://dashboard.clearbit.com/
+# Free tier: 50 lookups/month — sufficient for low-volume testing.
+CLEARBIT_API_KEY=sk-...
+
+# People Data Labs Company Enrichment API
+# Sign up: https://www.peopledatalabs.com/
+# Free tier: 100 credits/month.
+PDL_API_KEY=...
+```
+
+#### Enrichment provider behaviour
+
+| `ENRICHMENT_PROVIDER` | Resolution chain | Required keys |
+|---|---|---|
+| `clearbit` *(recommended)* | Clearbit → PDL → mock → not-found | `CLEARBIT_API_KEY` |
+| `pdl` | PDL → mock → not-found | `PDL_API_KEY` |
+| `mock` *(default)* | 6-company local dataset only | none |
+
+- If a live provider is configured but the domain is not found, the chain
+  continues to the next provider automatically.
+- If a live provider returns a network or auth error it is skipped silently and
+  the chain continues — the pipeline never hard-fails due to an enrichment outage.
+- The `provider` field on `EnrichmentResult` records which source ultimately
+  supplied the data and is written to the governance audit log.
+- You can override `ENRICHMENT_PROVIDER` per-run without editing the config file:
+  `ENRICHMENT_PROVIDER=pdl python -c "from orchestrator import run_pipeline; ..."`
 
 ---
 
@@ -170,3 +212,25 @@ All 5 test files must pass before the project is considered complete.
 ├── llm_client.py           # single llm_call() wrapper (OpenAI / offline fallback)
 └── requirements.txt
 ```
+
+**Deploy to Render**
+
+- Create a new **Web Service (Python)** on Render and point it at your repository and `main` branch.
+- Use these values for the Render form fields:
+  - Root directory: `.`
+  - Build command: `pip install -r requirements.txt`
+  - Start command: `streamlit run gate/streamlit_app.py --server.port $PORT --server.address 0.0.0.0`
+  - Health check path: `/`
+
+- Required environment variables (set in Render dashboard, do NOT commit them):
+  - `OPENAI_API_KEY` — OpenAI API key for drafting/rationale (optional: leave empty for offline mode)
+  - `CLEARBIT_API_KEY` — optional, if using `ENRICHMENT_PROVIDER=clearbit`
+  - `PDL_API_KEY` — optional, if using `ENRICHMENT_PROVIDER=pdl`
+
+- I included a `render.yaml` at the repo root for a managed Python web service and a `.env.example` you can copy locally.
+
+Local test command:
+```
+streamlit run gate/streamlit_app.py --server.port 8501
+```
+
