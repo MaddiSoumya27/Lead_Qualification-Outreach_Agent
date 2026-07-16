@@ -5,7 +5,7 @@ services:
     region: oregon
     branch: main
     pythonVersion: 3.11
-    buildCommand: python -m pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+    buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
     startCommand: streamlit run gate/streamlit_app.py --server.port $PORT --server.address 0.0.0.0
 
 # Note: For sensitive secrets (OPENAI_API_KEY, CLEARBIT_API_KEY, PDL_API_KEY)
