@@ -21,7 +21,6 @@ def _load_config() -> dict:
     with open(os.path.abspath(_CONFIG_PATH), "r") as f:
         return json.load(f)
 
-
 @dataclass
 class ScoreResult:
     score: int                  # 0–100
