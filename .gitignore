@@ -16,8 +16,8 @@ env/
 .env.*
 !.env.example
 
-# Config secrets
-config/icp_config.json
+# Config secrets (icp_config.json is NOT secret — it's pipeline config, must be tracked)
+# config/icp_config.json
 
 # Private keys and certificates
 *.pem

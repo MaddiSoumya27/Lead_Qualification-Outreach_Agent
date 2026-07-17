@@ -1,0 +1,46 @@
+{
+  "enrichment": {
+    "provider": "mock",
+    "_comment_provider": "One of: clearbit | pdl | mock. Override at runtime with ENRICHMENT_PROVIDER env var.",
+    "_comment_clearbit": "Set CLEARBIT_API_KEY env var to enable. Falls back to pdl → mock on miss.",
+    "_comment_pdl": "Set PDL_API_KEY env var to enable. Falls back to mock on miss.",
+    "request_timeout_seconds": 5,
+    "fallback_chain": {
+      "clearbit": ["clearbit", "pdl", "mock"],
+      "pdl":       ["pdl", "mock"],
+      "mock":      ["mock"]
+    }
+  },
+  "company_size": {
+    "ideal_min": 50,
+    "ideal_max": 5000,
+    "weight": 25
+  },
+  "industries": {
+    "ideal": ["SaaS", "FinTech", "HealthTech", "E-commerce", "MarTech", "EdTech"],
+    "acceptable": ["Consulting", "Agency", "Manufacturing", "Logistics"],
+    "disqualifying": ["Non-profit", "Government", "Education"],
+    "weight": 30
+  },
+  "roles": {
+    "ideal_titles": ["VP Sales", "Head of Sales", "Director of Revenue", "CRO", "VP Marketing", "CMO", "CEO", "Founder", "Co-Founder"],
+    "acceptable_titles": ["Sales Manager", "Marketing Manager", "Growth Lead", "BizDev Manager"],
+    "disqualifying_titles": ["Intern", "Student", "Volunteer"],
+    "weight": 25
+  },
+  "buying_signals": {
+    "positive": ["recently_funded", "hiring_sales_roles", "new_product_launch", "expanding_to_new_markets"],
+    "negative": ["recently_acquired", "layoffs_reported", "budget_freeze"],
+    "weight": 20
+  },
+  "email_domain": {
+    "personal_domains": ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com", "protonmail.com"],
+    "weight": -30
+  },
+  "thresholds": {
+    "HOT": 70,
+    "NURTURE": 40,
+    "DISQUALIFY": 0
+  },
+  "excluded_fields": ["first_name", "last_name", "full_name", "email_local_part", "gender", "age", "nationality", "ethnicity", "photo_url"]
+}
