@@ -16,6 +16,23 @@ env/
 .env.*
 !.env.example
 
+# Config secrets
+config/icp_config.json
+
+# Private keys and certificates
+*.pem
+*.key
+
+# Database files
+*.sqlite
+*.db
+*.db-journal
+
+# Private or sensitive files
+.secrets
+.aws/
+.credentials
+
 # Byte-compiled / build
 build/
 dist/
