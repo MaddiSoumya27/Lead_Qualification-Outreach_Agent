@@ -198,6 +198,38 @@ The system creates default user accounts on first run:
 | `pdl` | PDL → mock → not-found | `PDL_API_KEY` |
 | `mock` *(default)* | 6-company local dataset only | none |
 
+## Deploying to Render
+
+This repository includes a `render.yaml` file that defines two services:
+
+- `lqoa-streamlit` — the Streamlit UI
+- `lqoa-api` — the FastAPI (uvicorn) REST API
+
+Before deploying, configure the following in the Render dashboard (Service → Environment):
+
+- `DATABASE_URL` — a managed Postgres instance (do not use SQLite in production)
+- `JWT_SECRET_KEY` — a secure random secret for JWT signing
+- `OPENAI_API_KEY`, `CLEARBIT_API_KEY`, `PDL_API_KEY` — only if you use those providers
+- `REDIS_URL` — if Redis caching is required
+- `DEBUG=false` and `LOG_LEVEL=INFO` for production
+
+The `lqoa-api` service has a `releaseCommand` defined that runs DB migrations and seeds default users:
+
+```
+alembic upgrade head || true && python -m database.init_db
+```
+
+Notes:
+- Render will use `render.yaml` when you create a new service from the repo; you can also create services manually in the dashboard and set the same `startCommand`/`buildCommand`.
+- After deploy, change the default credentials and rotate any secrets. If secrets were previously exposed in Git history, rotate them immediately.
+- For team members: because this repo had a history rewrite, please re-clone the repo to avoid conflicts:
+
+```
+git clone https://github.com/MaddiSoumya27/Lead_Qualification-Outreach_Agent.git
+```
+
+If you'd like, I can add a small `render-release.sh` helper and a dedicated Render health-check endpoint — tell me which you'd prefer and I'll implement it.
+
 - If a live provider is configured but the domain is not found, the chain
   continues to the next provider automatically.
 - If a live provider returns a network or auth error it is skipped silently and
