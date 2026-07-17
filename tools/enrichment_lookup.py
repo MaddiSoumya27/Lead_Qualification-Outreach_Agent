@@ -6,6 +6,8 @@ Provider resolution order (controlled by ENRICHMENT_PROVIDER env var or icp_conf
   2. pdl        — People Data Labs Company API (requires PDL_API_KEY)
   3. mock       — local 6-company dataset (always available, used as final fallback)
 
+Enhanced with Redis caching to reduce API calls and improve performance.
+
 When a live provider is configured but returns no result for a domain, the chain
 continues to the next provider, then the mock, and finally a zero-value 'not-found'
 record.  A network or auth error from a live provider is caught, logged, and the
@@ -26,6 +28,8 @@ from pathlib import Path
 from typing import Optional
 
 from governance.logger import log_event
+from cache import get_enrichment_cache, set_enrichment_cache
+from database.connection import get_session
 
 logger = logging.getLogger(__name__)
 
@@ -310,11 +314,32 @@ def enrichment_lookup(company: str, domain: str, lead_id: str = "unknown") -> En
     Look up firmographic data for a company by domain (primary) or name (fallback).
 
     Resolution order:
-      configured_provider → fallback_providers → mock → not-found zero-value
+      cache_check → configured_provider → fallback_providers → mock → not-found zero-value
 
+    Enhanced with Redis caching to reduce API calls and improve performance.
     Always logs the call to the governance log.
     Never raises — provider errors are caught and the chain continues.
     """
+    # Check cache first
+    try:
+        with get_session() as db:
+            cached_result = get_enrichment_cache(domain, company, db)
+            if cached_result:
+                logger.info(f"Using cached enrichment for domain: {domain}")
+                # Convert cached dict back to EnrichmentResult
+                return EnrichmentResult(
+                    company=cached_result.get("company", company),
+                    domain=cached_result.get("domain", domain),
+                    industry=cached_result.get("industry", "Unknown"),
+                    employee_count=cached_result.get("employee_count", 0),
+                    hq_country=cached_result.get("hq_country", "Unknown"),
+                    buying_signals=cached_result.get("buying_signals", []),
+                    found=cached_result.get("found", False),
+                    provider=cached_result.get("provider", "cache")
+                )
+    except Exception as e:
+        logger.warning(f"Cache lookup failed: {e}, proceeding with API lookup")
+
     provider = _resolve_provider()
     chain = _resolve_chain(provider)
 
@@ -342,6 +367,15 @@ def enrichment_lookup(company: str, domain: str, lead_id: str = "unknown") -> En
             found=False,
             provider="none",
         )
+
+    # Cache the result for future use
+    if result.found or matched_provider != "none":
+        try:
+            with get_session() as db:
+                set_enrichment_cache(domain, result.to_dict(), company, db)
+                logger.info(f"Cached enrichment result for domain: {domain}")
+        except Exception as e:
+            logger.warning(f"Failed to cache enrichment result: {e}")
 
     log_event(
         lead_id=lead_id,
