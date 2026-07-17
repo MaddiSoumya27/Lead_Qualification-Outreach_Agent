@@ -4,26 +4,20 @@ services:
     env: python
     region: oregon
     branch: main
-    pythonVersion: 3.11
     buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
     startCommand: streamlit run gate/streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
 
-# Note: For sensitive secrets (OPENAI_API_KEY, CLEARBIT_API_KEY, PDL_API_KEY)
-# set environment variables in the Render dashboard (Environment → Environment Variables).
-
-# Optional: API service for the REST endpoints (uvicorn)
-# This creates a separate web service for the API so Streamlit and the API
-# can scale independently. The `releaseCommand` runs DB migrations and
-# seeds default users on deploy.
   - type: web
     name: lqoa-api
     env: python
     region: oregon
     branch: main
-    pythonVersion: 3.11
-    buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
+    buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt && (alembic upgrade head || true) && python -m database.init_db
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT --log-level info
     healthCheckPath: /api/health
-    # Run migrations and create default users during deploy. Adjust if you use
-    # a different migration strategy (e.g. CI job or separate DB migration service).
-    releaseCommand: alembic upgrade head || true && python -m database.init_db
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
