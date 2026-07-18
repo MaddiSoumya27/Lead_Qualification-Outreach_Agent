@@ -46,7 +46,7 @@ def log_event(
         f.write(json.dumps(entry) + "\n")
 
 
-def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None, classification: Optional[str] = None) -> list[dict]:
+def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None, classification: Optional[str] = None, limit: Optional[int] = None) -> list[dict]:
     """Return all log entries, optionally filtered by lead_id, stage, and/or classification."""
     _ensure_log_dir()
     path = os.path.abspath(LOG_PATH)
@@ -69,6 +69,11 @@ def query_log(lead_id: Optional[str] = None, stage: Optional[str] = None, classi
             if classification and entry.get("classification") != classification:
                 continue
             results.append(entry)
+            
+            # Apply limit if specified
+            if limit and len(results) >= limit:
+                break
+    
     return results
 
 

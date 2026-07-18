@@ -29,7 +29,7 @@ from typing import Optional
 
 from governance.logger import log_event
 from cache import get_enrichment_cache, set_enrichment_cache
-from database.connection import get_session
+from database.connection import get_database_session
 
 logger = logging.getLogger(__name__)
 
@@ -322,7 +322,7 @@ def enrichment_lookup(company: str, domain: str, lead_id: str = "unknown") -> En
     """
     # Check cache first
     try:
-        with get_session() as db:
+        with get_database_session() as db:
             cached_result = get_enrichment_cache(domain, company, db)
             if cached_result:
                 logger.info(f"Using cached enrichment for domain: {domain}")
@@ -371,7 +371,7 @@ def enrichment_lookup(company: str, domain: str, lead_id: str = "unknown") -> En
     # Cache the result for future use
     if result.found or matched_provider != "none":
         try:
-            with get_session() as db:
+            with get_database_session() as db:
                 set_enrichment_cache(domain, result.to_dict(), company, db)
                 logger.info(f"Cached enrichment result for domain: {domain}")
         except Exception as e:

@@ -1,11 +1,53 @@
 services:
+  # FastAPI Backend Service
+  - type: web
+    name: lqoa-api
+    env: python
+    region: oregon
+    branch: main
+    buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    preDeployCommand: python -m database.init_db
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 720
+      - key: ENRICHMENT_PROVIDER
+        value: mock
+      - key: STRUCTURED_LOGGING
+        value: true
+
+  # Enhanced Streamlit Frontend Service
   - type: web
     name: lqoa-streamlit
     env: python
     region: oregon
     branch: main
     buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
-    startCommand: streamlit run gate/streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    startCommand: streamlit run gate/enhanced_streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.runOnSave false --browser.gatherUsageStats false
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ENRICHMENT_PROVIDER
+        value: mock
+      - key: STRUCTURED_LOGGING
+        value: true
+
+databases:
+  - name: lqoa-postgres
+    databaseName: lqoa
+    user: lqoa_user
+    region: oregon
