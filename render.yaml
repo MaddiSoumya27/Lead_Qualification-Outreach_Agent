@@ -8,23 +8,30 @@ services:
     buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     preDeployCommand: python -m database.init_db
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
       - key: DEBUG
-        value: false
+        value: "false"
       - key: LOG_LEVEL
         value: INFO
       - key: API_HOST
-        value: 0.0.0.0
+        value: "0.0.0.0"
       - key: JWT_ALGORITHM
         value: HS256
       - key: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        value: 720
+        value: "720"
       - key: ENRICHMENT_PROVIDER
         value: mock
       - key: STRUCTURED_LOGGING
-        value: true
+        value: "true"
+      - key: ENVIRONMENT
+        value: production
+      # These must be set manually in the Render dashboard:
+      # - key: DATABASE_URL        (from the Render Postgres service)
+      # - key: JWT_SECRET_KEY      (generate with: python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+      # - key: OPENAI_API_KEY      (optional)
 
   # Enhanced Streamlit Frontend Service
   - type: web
@@ -34,20 +41,29 @@ services:
     branch: main
     buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
     startCommand: streamlit run gate/enhanced_streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.runOnSave false --browser.gatherUsageStats false
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
       - key: DEBUG
-        value: false
+        value: "false"
       - key: LOG_LEVEL
         value: INFO
       - key: ENRICHMENT_PROVIDER
         value: mock
       - key: STRUCTURED_LOGGING
-        value: true
+        value: "true"
+      - key: ENVIRONMENT
+        value: production
+      # These must be set manually in the Render dashboard:
+      # - key: DATABASE_URL        (same as API service)
+      # - key: JWT_SECRET_KEY      (same as API service)
+      # - key: API_BASE_URL        (e.g. https://lqoa-api.onrender.com)
+      # - key: OPENAI_API_KEY      (optional)
 
 databases:
   - name: lqoa-postgres
     databaseName: lqoa
     user: lqoa_user
     region: oregon
+    plan: free
