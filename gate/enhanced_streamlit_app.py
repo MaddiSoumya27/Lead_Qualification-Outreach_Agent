@@ -24,6 +24,19 @@ from database.models import User, Lead
 from auth.security import verify_token, create_access_token, verify_password, hash_password
 from governance.logger import query_log
 from monitoring.error_handler import handle_error, log_info
+from database.init_db import init_database
+
+# ── One-time DB / user seeding (idempotent — safe to run on every cold start) ──
+@st.cache_resource
+def _bootstrap_database():
+    """Create tables and seed default users if they don't exist yet."""
+    try:
+        init_database()
+    except Exception as exc:
+        # Non-fatal: tables / users may already exist
+        print(f"[bootstrap] DB init note: {exc}")
+
+_bootstrap_database()
 
 # ── Page Configuration ──────────────────────────────────────────────────────
 st.set_page_config(
