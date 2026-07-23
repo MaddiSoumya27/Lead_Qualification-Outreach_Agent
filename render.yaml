@@ -7,7 +7,6 @@ services:
     branch: main
     buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
-    preDeployCommand: python -m database.init_db
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
@@ -28,12 +27,12 @@ services:
         value: "true"
       - key: ENVIRONMENT
         value: production
-      # These must be set manually in the Render dashboard:
-      # - key: DATABASE_URL        (from the Render Postgres service)
-      # - key: JWT_SECRET_KEY      (generate with: python3 -c "import secrets; print(secrets.token_urlsafe(32))")
-      # - key: OPENAI_API_KEY      (optional)
+      # Set these manually in the Render dashboard:
+      # DATABASE_URL  - from the Render Postgres service (Internal URL)
+      # JWT_SECRET_KEY - generate: python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+      # OPENAI_API_KEY - optional, leave blank for offline mode
 
-  # Enhanced Streamlit Frontend Service
+  # Streamlit Frontend Service
   - type: web
     name: lqoa-streamlit
     env: python
@@ -55,11 +54,10 @@ services:
         value: "true"
       - key: ENVIRONMENT
         value: production
-      # These must be set manually in the Render dashboard:
-      # - key: DATABASE_URL        (same as API service)
-      # - key: JWT_SECRET_KEY      (same as API service)
-      # - key: API_BASE_URL        (e.g. https://lqoa-api.onrender.com)
-      # - key: OPENAI_API_KEY      (optional)
+      # Set these manually in the Render dashboard:
+      # DATABASE_URL   - same Internal URL as API service
+      # JWT_SECRET_KEY - same value as API service
+      # API_BASE_URL   - e.g. https://lqoa-api.onrender.com
 
 databases:
   - name: lqoa-postgres

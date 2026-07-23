@@ -18,13 +18,28 @@ import uuid
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from contextlib import asynccontextmanager
+
 from database.connection import get_database_session
 from database.models import User, Lead, ApprovalRecord
 from database.repositories import UserRepository, LeadRepository, ApprovalRepository
+from database.init_db import init_database
 from auth.security import verify_token, hash_password, create_access_token
 from orchestrator import run_pipeline, LeadState
 from monitoring.error_handler import handle_error
 from governance.logger import log_event
+
+# ── Startup / shutdown lifecycle ─────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run DB init on startup so no pre-deploy command is needed."""
+    try:
+        init_database()
+        print("✓ Database initialized on startup")
+    except Exception as e:
+        print(f"⚠ Database init warning (may already exist): {e}")
+    yield  # app runs here
+    # shutdown logic can go here if needed
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -32,7 +47,8 @@ app = FastAPI(
     description="Production-ready lead processing pipeline with human approval gates",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    lifespan=lifespan
 )
 
 # Configure CORS
